@@ -1,0 +1,38 @@
+# You might setup to Environment variables
+# AWS_REGION, AWS_ACCOUNT_ID, IMAGE_NAME, IMAGE_TAG
+
+# AWS Codebuild supplied version
+version : 0.2
+# Setting the Lifecycle
+phase:
+  install:
+    # Setting the Runtime Version
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install
+      - pwd
+  # Prebuild Phase
+  pre_build:
+    - echo PREBUID PHASE
+    - echo LOGIN TO ECR
+    - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+  # Build Phase
+  build:
+    - echo BUILD PHASE
+    - echo BUILD IMAGE
+    - docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG} . 
+    - echo PUSH IMAGE TO ECR
+    - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}
+  # Postbuild Phase
+  post_build:
+    - echo POSTBUILD PHASE
+    - printf '[{"name":"Basic-Helloworld","imageUri":"%s"}]' ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG} > imagedefinitions.json 
+# Build Output (Artifacts)
+artifacts:
+  files:
+    - "Basic-Helloworld/imagedefinitions.json"
+# Using memory cache
+cache:
+  paths:
+    - "node_modules/**/*"
