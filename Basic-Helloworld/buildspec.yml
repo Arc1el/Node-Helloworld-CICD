@@ -28,6 +28,8 @@ phase:
   post_build:
     - echo POSTBUILD PHASE
     - printf '[{"name":"Basic-Helloworld","imageUri":"%s"}]' ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG} > imagedefinitions.json 
+    - pwd
+    - ls
 # Build Output (Artifacts)
 artifacts:
   files:
